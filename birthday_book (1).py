@@ -36,7 +36,35 @@ class BirthdayManager:
     def __init__(self):
         self.birthday_book = []
         self.echo_state = False
-        
+
+    def commands(self,argument):
+        if argument=="":
+               print("No command entered. Please enter a list of commands, or type 'help' for a list.")
+        elif argument[0]=="add":
+            self.add(argument)
+        elif argument[0]=="help":
+             self.print_help()
+        elif argument[0]=="list":
+             self.list_entries()
+        elif argument[0]=="delete":
+             self.delete(argument)
+        elif argument[0]=="search":
+            self.search(argument)
+        elif argument[0]=="save":
+            self.save(argument)
+        elif argument[0]=="load":
+            self.load(argument)
+        elif argument[0]=="quit":
+            return False
+        elif argument[0]=="echo":
+            self.echo(argument)
+        elif argument[0]=="update":
+            self.update(argument)
+        else:
+            print("I am sorry, but that is not a recognized command, or")
+            print("you have entered an incorrect number of arguments.")
+            print("You may enter 'help' to see a list of commands.")    
+    
     def add(self, argument):
         if len(argument) != 6:
             print("Error: add command requires firstname, lastname, month, day, year")
@@ -173,6 +201,46 @@ class BirthdayManager:
         except (IndexError, ValueError):
             print("Error: Please specify the item to delete using an integer.")
     
+    def update(self, argument):
+        """Update an existing birthday entry"""
+        if len(argument) != 7:  # command + 6 arguments = 7 total
+            print("Error: Update command format:")
+            print("update entryNumber newFirstName newLastName newMonth newDay newYear")
+            return
+        
+        try:
+            index = int(argument[1]) - 1  # Convert from 1-based to 0-based indexing
+            if 0 <= index < len(self.birthday_book):
+                old_entry = self.birthday_book[index]
+                new_firstname = argument[2]
+                new_lastname = argument[3]
+                new_month = int(argument[4])
+                new_day = int(argument[5])
+                new_year = int(argument[6])
+                
+                # Show the current and new values
+                print(f"Current entry: {old_entry}")
+                new_entry = Birthday(new_firstname, new_lastname, new_month, new_day, new_year)
+                print(f"New entry will be: {new_entry}")
+                
+                # Confirm the update
+                decision = input("Do you want to update this entry? (y/n) ")
+                while decision.lower() not in ['y', 'n']:
+                    decision = input('Please enter "y" or "n" (y/n): ')
+                
+                if decision.lower() == 'y':
+                    self.birthday_book[index] = new_entry
+                    print(f"Updated entry {index + 1}")
+                    self.list_entries()  # Using new method name
+                else:
+                    print("Update cancelled")
+            else:
+                print("Error: Invalid entry number")
+        except ValueError:
+            print("Error: Please use integers for entry number, month, day, and year")
+        except IndexError:
+            print("Error: Invalid entry number")
+    
     def echo(self,argument):
         if argument[1] == "on":
             self.echo_state = True
@@ -181,57 +249,27 @@ class BirthdayManager:
             self.echo_state = False
             print("Echo turned off.")
     
-    def list(self, argument):
+    def list_entries(self):  # Renamed method and removed argument parameter
+        """List all entries in the birthday book"""
         if not self.birthday_book:
             print("The birthday book is empty.")
-            return
-    
-        print("Birthday book entries:")
-        index = 1
-        for entry in self.birthday_book:
-            age = entry.get_age()
-            days_until = entry.days_until_birthday()
-            print(f"{index}. {entry} (Age: {age}, Next birthday in: {days_until} days)")
-            index += 1
-
-    def print_help(self):
-        print("Available commands:")
-        print("  add firstName lastName month day year")
-        print("  list")
-        print("  delete number")
-        print("  search name")
-        print("  save filename")
-        print("  load filename")
-        print("  stats            (show birthday statistics)")
-        print("  help")
-        print("  echo on/off")
-        print("  quit")
-
-    def commands(self, argument):
-        if not argument:
-            print("No command entered. Type 'help' for available commands.")
-            return
-            
-        command = argument[0].lower()
-        
-        command_map = {
-            'add': self.add,
-            'help': lambda x: self.print_help(),
-            'list': self.list,
-            'delete': self.delete,
-            'search': self.search,
-            'save': self.save,
-            'load': self.load,
-            'stats': lambda x: self.stats(),
-            'echo': self.echo,
-            'quit': lambda x: False
-        }
-        
-        if command in command_map:
-            return command_map[command](argument)
         else:
-            print(f"Unknown command: {command}")
-            print("Type 'help' for available commands")
+            for i in range(len(self.birthday_book)):
+                print(f"{i + 1}. {self.birthday_book[i]}")
+
+    def print_help(self): 
+        print("Allowed commands:")
+        print("add firstName lastName month day year")
+        print("update entryNumber newFirstName newLastName newMonth newDay newYear")
+        print("list") 
+        print("delete number")
+        print("search name")
+        print("save filename")
+        print("load filename")
+        print("help")
+        print("echo on")
+        print("echo off")
+        print("quit")
 
 def main():
     manager = BirthdayManager()
